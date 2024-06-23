@@ -17,10 +17,36 @@ db.init_app(app)
 api = Api(app)
 
 class Plants(Resource):
-    pass
+    def get(self):
+        plant_dict_list = [plant.to_dict() for plant in Plant.query.all()]
+        response = make_response(plant_dict_list, 200)
+        return response
+
+    def post(self):
+        data = request.get_json()
+
+        new_record = Plant(
+            name=data.get('name'),
+            image=data.get('image'),
+            price=data.get('price'),
+        )
+        db.session.add(new_record)
+        db.session.commit()
+
+        response_dict = new_record.to_dict()
+        response = make_response(response_dict, 201)
+        return response
+
+api.add_resource(Plants, '/plants')
 
 class PlantByID(Resource):
-    pass
+    def get(self, id):
+        plant_dict = Plant.query.filter_by(id=id).first().to_dict()
+        response = make_response(plant_dict, 200)
+        return response
+
+api.add_resource(PlantByID, '/plants/<int:id>')
+
         
 
 if __name__ == '__main__':
